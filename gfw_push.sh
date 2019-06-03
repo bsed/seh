@@ -119,8 +119,7 @@ Set_Token(){
 		echo -e "请输入推送机器人 [API密匙]
 Token，通过 @notificationme_bot 机器人获取。
 获取步骤：向机器人发送 /start 后，机器人会告诉一个API URL，例如：https://tgbot.lbyczf.com/sendMessage/abc，其中的 abc 就是API密匙。"
-		read -e -p "(默认是我的：cnb7yijocxu1e1):" new_token
-		[[ -z "${new_token}" ]] && new_token="cnb7yijocxu1e1"
+		read -e -p "(不能为空):" new_token
 		if [[ ! -z "${new_token}" ]]; then
 			echo && echo "========================"
 			echo -e "	密匙 : ${Red_background_prefix} ${new_token} ${Font_color_suffix}"
@@ -360,9 +359,9 @@ View_Log(){
 	tail -f ${LOG_file}
 }
 Update_Shell(){
-	sh_new_ver=$(wget --no-check-certificate -qO- -t1 -T3 "https://raw.githubusercontent.com/ToyoDAdoubiBackup/doubi/master/gfw_push.sh"|grep 'sh_ver="'|awk -F "=" '{print $NF}'|sed 's/\"//g'|head -1)
+	sh_new_ver=$(wget --no-check-certificate -qO- -t1 -T3 "https://raw.githubusercontent.com/ToyoDAdoubi/doubi/master/gfw_push.sh"|grep 'sh_ver="'|awk -F "=" '{print $NF}'|sed 's/\"//g'|head -1)
 	[[ -z ${sh_new_ver} ]] && echo -e "${Error} 无法链接到 Github !" && exit 0
-	wget -N --no-check-certificate "https://raw.githubusercontent.com/ToyoDAdoubiBackup/doubi/master/gfw_push.sh" && chmod +x gfw_push.sh
+	wget -N --no-check-certificate "https://raw.githubusercontent.com/ToyoDAdoubi/doubi/master/gfw_push.sh" && chmod +x gfw_push.sh
 	echo -e "脚本已更新为最新版本[ ${sh_new_ver} ] !(注意：因为更新方式为直接覆盖当前运行的脚本，所以可能下面会提示一些报错，无视即可)" && exit 0
 }
 check_sys

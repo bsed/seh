@@ -4,11 +4,11 @@ export PATH
 #=================================================
 #       System Required: CentOS/Debian/Ubuntu
 #       Description: iptables 封禁 BT、PT、SPAM（垃圾邮件）和自定义端口、关键词
-#       Version: 1.0.9
+#       Version: 1.0.10
 #       Blog: https://doub.io/shell-jc2/
 #=================================================
 
-sh_ver="1.0.9"
+sh_ver="1.0.10"
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
 Info="${Green_font_prefix}[信息]${Font_color_suffix}"
 Error="${Red_font_prefix}[错误]${Font_color_suffix}"
@@ -258,7 +258,7 @@ ENTER_Ban_KEY_WORDS_type(){
  1. 手动输入（只支持单个关键词）
  2. 本地文件读取（支持批量读取关键词，每行一个关键词）
  3. 网络地址读取（支持批量读取关键词，每行一个关键词）" && echo
-		stty erase '^H' && read -p "(默认: 1. 手动输入):" key_word_type
+		read -e -p "(默认: 1. 手动输入):" key_word_type
 	fi
 	[[ -z "${key_word_type}" ]] && key_word_type="1"
 	if [[ ${key_word_type} == "1" ]]; then
@@ -280,27 +280,31 @@ ENTER_Ban_KEY_WORDS_type(){
 	fi
 }
 ENTER_Ban_PORT(){
-	echo -e "请输入欲封禁的 端口（单端口/多端口/连续端口段）
- ${Green_font_prefix}========示例说明========${Font_color_suffix}
+	echo -e "请输入欲封禁的 端口（单端口/多端口/连续端口段）"
+	if [[ ${Ban_PORT_Type_1} != "1" ]]; then
+	echo -e "${Green_font_prefix}========示例说明========${Font_color_suffix}
  单端口：25（单个端口）
  多端口：25,26,465,587（多个端口用英文逗号分割）
  连续端口段：25:587（25-587之间的所有端口）" && echo
-	stty erase '^H' && read -p "(回车默认取消):" PORT
+	fi
+	read -e -p "(回车默认取消):" PORT
 	[[ -z "${PORT}" ]] && echo "已取消..." && View_ALL && exit 0
 }
 ENTER_Ban_KEY_WORDS(){
-	echo -e "请输入欲封禁的 关键词（域名等，仅支持单个关键词）
- ${Green_font_prefix}========示例说明========${Font_color_suffix}
+	echo -e "请输入欲封禁的 关键词（域名等，仅支持单个关键词）"
+	if [[ ${Type_1} != "ban_1" ]]; then
+	echo -e "${Green_font_prefix}========示例说明========${Font_color_suffix}
  关键词：youtube，即禁止访问任何包含关键词 youtube 的域名。
  关键词：youtube.com，即禁止访问任何包含关键词 youtube.com 的域名（泛域名屏蔽）。
  关键词：www.youtube.com，即禁止访问任何包含关键词 www.youtube.com 的域名（子域名屏蔽）。
  更多效果自行测试（如关键词 .zip 即可禁止下载任何 .zip 后缀的文件）。" && echo
-	stty erase '^H' && read -p "(回车默认取消):" key_word
+	fi
+	read -e -p "(回车默认取消):" key_word
 	[[ -z "${key_word}" ]] && echo "已取消..." && View_ALL && exit 0
 }
 ENTER_Ban_KEY_WORDS_file(){
 	echo -e "请输入欲封禁/解封的 关键词本地文件（请使用绝对路径）" && echo
-	stty erase '^H' && read -p "(默认 读取脚本同目录下的 key_word.txt ):" key_word
+	read -e -p "(默认 读取脚本同目录下的 key_word.txt ):" key_word
 	[[ -z "${key_word}" ]] && key_word="key_word.txt"
 	if [[ -e "${key_word}" ]]; then
 		key_word=$(cat "${key_word}")
@@ -311,7 +315,7 @@ ENTER_Ban_KEY_WORDS_file(){
 }
 ENTER_Ban_KEY_WORDS_url(){
 	echo -e "请输入欲封禁/解封的 关键词网络文件地址（例如 http://xxx.xx/key_word.txt）" && echo
-	stty erase '^H' && read -p "(回车默认取消):" key_word
+	read -e -p "(回车默认取消):" key_word
 	[[ -z "${key_word}" ]] && echo "已取消..." && View_ALL && exit 0
 	key_word=$(wget --no-check-certificate -t3 -T5 -qO- "${key_word}")
 	[[ -z ${key_word} ]] && echo -e "${Error} 网络文件内容为空或访问超时 !" && View_ALL && exit 0
@@ -319,18 +323,20 @@ ENTER_Ban_KEY_WORDS_url(){
 ENTER_UnBan_KEY_WORDS(){
 	View_KEY_WORDS
 	echo -e "请输入欲解封的 关键词（根据上面的列表输入完整准确的 关键词）" && echo
-	stty erase '^H' && read -p "(回车默认取消):" key_word
+	read -e -p "(回车默认取消):" key_word
 	[[ -z "${key_word}" ]] && echo "已取消..." && View_ALL && exit 0
 }
 ENTER_UnBan_PORT(){
 	echo -e "请输入欲解封的 端口（根据上面的列表输入完整准确的 端口，包括逗号、冒号）" && echo
-	stty erase '^H' && read -p "(回车默认取消):" PORT
+	read -e -p "(回车默认取消):" PORT
 	[[ -z "${PORT}" ]] && echo "已取消..." && View_ALL && exit 0
 }
 Ban_PORT(){
 	s="A"
 	ENTER_Ban_PORT
 	Set_PORT
+	echo -e "${Info} 已封禁端口 [ ${PORT} ] !\n"
+	Ban_PORT_Type_1="1"
 	while true
 	do
 		ENTER_Ban_PORT
@@ -343,6 +349,7 @@ Ban_KEY_WORDS(){
 	s="A"
 	ENTER_Ban_KEY_WORDS_type "ban"
 	Set_KEY_WORDS
+	echo -e "${Info} 已封禁关键词 [ ${key_word} ] !\n"
 	while true
 	do
 		ENTER_Ban_KEY_WORDS_type "ban" "ban_1"
@@ -354,13 +361,14 @@ Ban_KEY_WORDS(){
 UnBan_PORT(){
 	s="D"
 	View_PORT
-	[[ -z ${Ban_PORT_list} ]] && echo -e "${Error} 检测到未封禁任何 端口，请检查 !" && exit 0
+	[[ -z ${Ban_PORT_list} ]] && echo -e "${Error} 检测到未封禁任何 端口 !" && exit 0
 	ENTER_UnBan_PORT
 	Set_PORT
+	echo -e "${Info} 已解封端口 [ ${PORT} ] !\n"
 	while true
 	do
 		View_PORT
-		[[ -z ${Ban_PORT_list} ]] && echo -e "${Error} 检测到未封禁任何 端口，请检查 !" && exit 0
+		[[ -z ${Ban_PORT_list} ]] && echo -e "${Error} 检测到未封禁任何 端口 !" && exit 0
 		ENTER_UnBan_PORT
 		Set_PORT
 		echo -e "${Info} 已解封端口 [ ${PORT} ] !\n"
@@ -370,13 +378,14 @@ UnBan_PORT(){
 UnBan_KEY_WORDS(){
 	s="D"
 	Cat_KEY_WORDS
-	[[ -z ${Ban_KEY_WORDS_list} ]] && echo -e "${Error} 检测到未封禁任何 关键词，请检查 !" && exit 0
+	[[ -z ${Ban_KEY_WORDS_list} ]] && echo -e "${Error} 检测到未封禁任何 关键词 !" && exit 0
 	ENTER_Ban_KEY_WORDS_type "unban"
 	Set_KEY_WORDS
+	echo -e "${Info} 已解封关键词 [ ${key_word} ] !\n"
 	while true
 	do
 		Cat_KEY_WORDS
-		[[ -z ${Ban_KEY_WORDS_list} ]] && echo -e "${Error} 检测到未封禁任何 关键词，请检查 !" && exit 0
+		[[ -z ${Ban_KEY_WORDS_list} ]] && echo -e "${Error} 检测到未封禁任何 关键词 !" && exit 0
 		ENTER_Ban_KEY_WORDS_type "unban" "ban_1"
 		Set_KEY_WORDS
 		echo -e "${Info} 已解封关键词 [ ${key_word} ] !\n"
@@ -418,22 +427,10 @@ Debian / Ubuntu 系统：apt-get install iptables -y"
 	fi
 }
 Update_Shell(){
-	echo -e "当前版本为 [ ${sh_ver} ]，开始检测最新版本..."
-	sh_new_ver=$(wget --no-check-certificate -qO- "https://raw.githubusercontent.com/ToyoDAdoubiBackup/doubi/master/ban_iptables.sh"|grep 'sh_ver="'|awk -F "=" '{print $NF}'|sed 's/\"//g'|head -1)
-	[[ -z ${sh_new_ver} ]] && echo -e "${Error} 检测最新版本失败 !" && exit 1
-	if [[ ${sh_new_ver} != ${sh_ver} ]]; then
-		echo -e "发现新版本[ ${sh_new_ver} ]，是否更新？[Y/n]"
-		stty erase '^H' && read -p "(默认: y):" yn
-		[[ -z "${yn}" ]] && yn="y"
-		if [[ ${yn} == [Yy] ]]; then
-			wget -N --no-check-certificate https://raw.githubusercontent.com/ToyoDAdoubiBackup/doubi/master/ban_iptables.sh && chmod +x ban_iptables.sh
-			echo -e "脚本已更新为最新版本[ ${sh_new_ver} ] !"
-		else
-			echo && echo "	已取消..." && echo
-		fi
-	else
-		echo -e "当前已是最新版本[ ${sh_new_ver} ] !"
-	fi
+	sh_new_ver=$(wget --no-check-certificate -qO- -t1 -T3 "https://raw.githubusercontent.com/ToyoDAdoubi/doubi/master/ban_iptables.sh"|grep 'sh_ver="'|awk -F "=" '{print $NF}'|sed 's/\"//g'|head -1)
+	[[ -z ${sh_new_ver} ]] && echo -e "${Error} 无法链接到 Github !" && exit 0
+	wget -N --no-check-certificate "https://raw.githubusercontent.com/ToyoDAdoubi/doubi/master/ban_iptables.sh" && chmod +x ban_iptables.sh
+	echo -e "脚本已更新为最新版本[ ${sh_new_ver} ] !(注意：因为更新方式为直接覆盖当前运行的脚本，所以可能下面会提示一些报错，无视即可)" && exit 0
 }
 check_sys
 check_iptables
@@ -466,7 +463,7 @@ echo && echo -e " iptables防火墙 封禁管理脚本 ${Red_font_prefix}[v${sh_
 ————————————
  ${Green_font_prefix}12.${Font_color_suffix} 升级脚本
 " && echo
-stty erase '^H' && read -p " 请输入数字 [0-12]:" num
+read -e -p " 请输入数字 [0-12]:" num
 case "$num" in
 	0)
 	View_ALL
